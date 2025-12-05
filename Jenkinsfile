@@ -6,8 +6,10 @@ pipeline {
         SONAR_TOKEN = "sqp_ab4016bc5eef902acdbc5f5dbf8f0d46815f0035"
 
         DOCKER_REGISTRY_URL = "v2deploy.rtwohealthcare.com"
-        IMAGE_NAME = "calculator-backend"
+        IMAGE_NAME = "test-v3"
         IMAGE_TAG = "v${BUILD_NUMBER}"
+
+        BACKEND_DIR = "backend"
     }
 
     stages {
@@ -18,12 +20,17 @@ pipeline {
             }
         }
 
+        // -----------------------------------------------------------
+        // Python Build & Tests using Docker
+        // -----------------------------------------------------------
+
         stage('Install Python Dependencies') {
             steps {
                 sh """
-                    cd backend
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
+                    docker run --rm \
+                        -v \$PWD/${BACKEND_DIR}:/app \
+                        -w /app python:3.10-slim \
+                        sh -c "pip install --upgrade pip && pip install -r requirements.txt"
                 """
             }
         }
@@ -31,22 +38,30 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 sh """
-                    cd backend
-                    pytest -q || true
+                    docker run --rm \
+                        -v \$PWD/${BACKEND_DIR}:/app \
+                        -w /app python:3.10-slim \
+                        pytest -q || true
                 """
             }
         }
+
+        // -----------------------------------------------------------
+        // SonarQube Scan (Python project)
+        // -----------------------------------------------------------
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh """
-                        sonar-scanner \
-                          -Dsonar.projectKey=calculator_backend \
-                          -Dsonar.projectName=calculator_backend \
-                          -Dsonar.sources=backend \
-                          -Dsonar.host.url=${SONAR_HOST_URL} \
-                          -Dsonar.token=${SONAR_TOKEN}
+                        docker run --rm \
+                            -v \$PWD:/src \
+                            -w /src \
+                            sonarsource/sonar-scanner-cli \
+                                -Dsonar.projectKey=test_v3 \
+                                -Dsonar.sources=backend \
+                                -Dsonar.host.url=${SONAR_HOST_URL} \
+                                -Dsonar.token=${SONAR_TOKEN}
                     """
                 }
             }
@@ -54,9 +69,13 @@ pipeline {
 
         stage('Skip Quality Gate') {
             steps {
-                echo "Quality Gate intentionally skipped per request."
+                echo "Skipping Sonar Quality Gate check by request."
             }
         }
+
+        // -----------------------------------------------------------
+        // Docker Build & Push
+        // -----------------------------------------------------------
 
         stage('Docker Build') {
             steps {
@@ -91,10 +110,10 @@ pipeline {
 
     post {
         success {
-            echo '🚀 Backend app built, tested, scanned, and pushed successfully!'
+            echo "🔥 Build + Test + Sonar + Docker Push successful!"
         }
         failure {
-            echo '❌ Build failed — check logs.'
+            echo "❌ Pipeline failed — fix your mess."
         }
     }
 }
