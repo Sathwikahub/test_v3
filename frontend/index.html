@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculator Test</h1>
+    
+    <div>
+        <input type="number" id="num1" placeholder="Number 1">
+        <select id="operation">
+            <option value="+">+</option>
+            <option value="-">-</option>
+            <option value="*">×</option>
+            <option value="/">÷</option>
+            <option value="pow">^</option>
+        </select>
+        <input type="number" id="num2" placeholder="Number 2">
+    </div>
+    
+    <button id="calculateBtn">Calculate</button>
+    
+    <div id="result"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

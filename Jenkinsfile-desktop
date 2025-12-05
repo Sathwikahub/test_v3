@@ -1,0 +1,81 @@
+pipeline {
+    agent any
+
+    environment {
+        SONARQUBE = 'Calculator'
+        APP_PATH = 'animation-calculator/backend'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '📥 Checking out code...'
+                git branch: 'main', credentialsId: 'github-pat', url: 'https://github.com/Mo-nish/Calculator.git'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('Calculator') {
+                    bat """
+                    sonar-scanner ^
+                        -Dsonar.projectKey=Calculator ^
+                        -Dsonar.sources=. ^
+                        -Dsonar.host.url=http://localhost:9000 ^
+                        -Dsonar.token=%SONAR_TOKEN%
+                    """
+                }
+            }
+        }
+
+        stage('Quality Gate Check') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "🚫 Quality gate failed: ${qg.status}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                echo '🧪 Running unit tests...'
+                bat """
+                    cd %APP_PATH%
+                    pytest --maxfail=1 --disable-warnings -q
+                """
+            }
+        }
+
+        stage('Package Desktop App') {
+            steps {
+                echo '📦 Building desktop executable...'
+                bat """
+                    cd %APP_PATH%
+                    pip install pyinstaller
+                    pyinstaller --onefile --noconsole desktop_app.py --name AnimationCalculator
+                """
+            }
+        }
+
+        stage('Archive Executable') {
+            steps {
+                echo '📁 Archiving .exe file as Jenkins artifact...'
+                archiveArtifacts artifacts: 'animation-calculator/backend/dist/AnimationCalculator.exe', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Desktop app built successfully!'
+        }
+        failure {
+            echo '❌ Build failed.'
+        }
+    }
+}
