@@ -1,7 +1,1 @@
 FROM sonarsource/sonar-scanner-cli:latest
-
-# Copy your company SSL certificate
-COPY rtwohealthcare.crt /usr/local/share/ca-certificates/
-
-# Update trust store
-RUN update-ca-certificates
