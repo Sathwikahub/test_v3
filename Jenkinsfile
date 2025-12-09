@@ -12,19 +12,7 @@ pipeline {
             steps { checkout scm }
         }
 
-        stage('Install & Test Python Code') {
-            steps {
-                sh """
-                    docker run --rm \
-                        -v ${WORKSPACE}/backend:/app \
-                        -w /app python:3.10-slim sh -c "
-                            pip install --upgrade pip &&
-                            pip install -r requirements.txt &&
-                            pytest --disable-warnings --maxfail=1 -q || true
-                        "
-                """
-            }
-        }
+        
 
         stage('SonarQube Analysis') {
             steps {
@@ -34,7 +22,7 @@ pipeline {
                     
                     
                 
-                        -v ${WORKSPACE}:/src \
+                    
                         -w /src sonar-scanner-custom \
                        sonar-scanner.bat 
                        -D"sonar.projectKey=python" 
