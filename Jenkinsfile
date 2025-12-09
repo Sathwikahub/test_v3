@@ -38,7 +38,7 @@ pipeline {
                         -w /src sonar-scanner-custom \
                        sonar-scanner.bat 
                        -D"sonar.projectKey=python" 
-                       -D"sonar.sources=." 
+                       -D"sonar.sources=backend" 
                        -D"sonar.host.url=https://v2code.rtwohealthcare.com" 
                        -D"sonar.token=sqp_b9c95d8c8334c110a2193cbc9ef7b72b3e707d99"
 
