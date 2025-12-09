@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONAR_HOST_URL = "http://v2code.rtwohealthcare.com"
-        SONAR_TOKEN    = "sqp_ab4016bc5eef902acdbc5f5dbf8f0d46815f0035"
+        SONAR_TOKEN    = "sqp_b9c95d8c8334c110a2193cbc9ef7b72b3e707d99"
     }
 
     stages {
@@ -31,16 +31,21 @@ pipeline {
                 echo "Running Legacy Sonar Scanner (4.6) for old SonarQube"
 
                 sh """
-                    docker build -t sonar-scanner-custom -f sonar-runner-Dockerfile .
                     
-                    docker run --rm \
+                    
+                
                         -v ${WORKSPACE}:/src \
                         -w /src sonar-scanner-custom \
-                        sonar-scanner \
-                            -Dsonar.projectKey=test_v3 \
-                            -Dsonar.sources=backend \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_TOKEN}
+                       sonar-scanner.bat 
+                       -D"sonar.projectKey=python" 
+                       -D"sonar.sources=." 
+                       -D"sonar.host.url=https://v2code.rtwohealthcare.com" 
+                       -D"sonar.token=sqp_b9c95d8c8334c110a2193cbc9ef7b72b3e707d99"
+
+
+
+
+
                 """
             }
         }
